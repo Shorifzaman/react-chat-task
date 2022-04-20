@@ -82,7 +82,7 @@ io.on('connection',(socket)=>{
     socket.on('logout',userId=>{
         userLogout(userId)
     })
-    socket.on('disconnect',()=>{
+    socket.on('disconnect user',()=>{
         console.log('user disconnect....');
         userRemove(socket.id);
         io.emit('getUser',users)
