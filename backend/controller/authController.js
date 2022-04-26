@@ -123,7 +123,7 @@ console.log(req.body , 'userRegister');
 }
 
 module.exports.userLogin = async (req, res) => {
-
+    console.log(req.body , 'userLogin');
     const error = [];
     const {
         email,
