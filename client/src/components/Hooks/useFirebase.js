@@ -1,18 +1,30 @@
-import  { useEffect, useState } from 'react';
-import { createUserWithEmailAndPassword, getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, signOut, updateProfile } from 'firebase/auth';
-import initializeAuthentication from '../../pages/Firebase/firebase.init';
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+} from 'firebase/auth';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { userLogin, userLogout, userRegister } from '../../store/actions/authAction';
+import initializeAuthentication from '../../pages/Firebase/firebase.init';
+import {
+  userLogin,
+  userLogout,
+  userRegister,
+} from '../../store/actions/authAction';
 
 initializeAuthentication();
 
 const useFirebase = () => {
-  const { myInfo } = useSelector(state => state.auth);
-  const [user, setUser] = useState({})
-  const [isLoading, setIsLoading] = useState(true)
-  const auth = getAuth()
-  const dispatch = useDispatch ();
-  const [authError, setAuthError] = useState('')
+  const { myInfo } = useSelector((state) => state.auth);
+  const [user, setUser] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  const auth = getAuth();
+  const dispatch = useDispatch();
+  const [authError, setAuthError] = useState('');
 
   // login google------------------------
   const signInWithGoogle = (location, navigate) => {
@@ -31,85 +43,70 @@ const useFirebase = () => {
         // REGISTER USER IN DATABASE
         registerToDB(newUser, location, navigate);
         // saveUsers(user.email, user.displayName, 'PUT')
-        
+
         // setUser(user)
         const destination = location?.state?.from || '/';
-        navigate(destination)
-        
-        setAuthError('')
-      }).catch((error) => {
-        setAuthError(error.message)
+        navigate(destination);
 
+        setAuthError('');
       })
-  }
+      .catch((error) => {
+        setAuthError(error.message);
+      });
+  };
 
-  // register user 
+  // register user
   const registerUser = (email, password, userName, location, navigate) => {
-    setIsLoading(true)
+    setIsLoading(true);
     createUserWithEmailAndPassword(auth, email, password)
+      .then((user) => {
+        console.log('this is user', user);
 
-      .then((userCredential) => {
-        // Signed in 
-        const user = userCredential.myInfo;
-        
         // save to database-------------
         // ...
         setAuthError('');
         // setUser(newUser)
         const newUser = {
-          userName: user.displayName,
-          email: user.email,
-          password: 'noneedofpassword',
+          userName,
+          email,
+          password,
           // image: 'file',
-          emailVerified: user.emailVerified,
+          emailVerified: user?.emailVerified,
         };
+
         // REGISTER USER IN DATABASE
         registerToDB(newUser, location, navigate);
-        // updateProfile----------
-        updateProfile(auth.currentUser, {
-          displayName: userName
-        }).then(() => {
-          // Profile updated!
-          // ...
-        }).catch((error) => {
-          // An error occurred
-          // ...
-        });
 
-        const destination = location?.state?.from || '/';
-        navigate(destination)
-        setAuthError('')
+        setAuthError('');
       })
       .catch((error) => {
         // const errorCode = error.code;
         // const errorMessage = error.message;
-        setAuthError(error.message)
+        setAuthError(error.message);
         // ..
-      }).finally(() => {
-        setIsLoading(false);
       })
-  }
-
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
 
   const loginUser = (email, password, location, navigate) => {
-    setIsLoading(true)
+    setIsLoading(true);
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         const destination = location?.state?.from || '/';
-        navigate(destination)
-        setAuthError('')
-
+        navigate(destination);
+        setAuthError('');
       })
       .catch((error) => {
         // const errorCode = error.code;
         const errorMessage = error.message;
-        setAuthError(errorMessage)
-      }).finally(() => {
-        setIsLoading(false)
-
+        setAuthError(errorMessage);
       })
-  }
-
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
 
   //logout-----------------
 
@@ -129,7 +126,6 @@ const useFirebase = () => {
   // on auth state change -----------------------------
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-
       if (user) {
         const newUser = {
           name: user?.displayName,
@@ -137,52 +133,53 @@ const useFirebase = () => {
           emailVerified: user?.emailVerified,
         };
 
-        setUser(newUser)
+        setUser(newUser);
       } else {
-        setUser({})
+        setUser({});
       }
-      setIsLoading(false)
-    })
-    return () => unsubscribe()
-  }, [auth])
-// --------------------------------------------------------------//
-const registerToDB = (newUser, location, navigate) => {
-  dispatch(userRegister(newUser));
+      setIsLoading(false);
+    });
+    return () => unsubscribe();
+  }, [auth]);
 
-  const redirect_uri = location?.state?.from || '/';
-  navigate(redirect_uri);
-};
+  // --------------------------------------------------------------//
+  const registerToDB = (newUser, location, navigate) => {
+    dispatch(userRegister({ ...newUser, confirmPassword: newUser.password }));
 
-const loginToDB = (email, password) => {
-  try {
-    const response = (
-      {
-        email,
-        password,
-      },
-      {
-        withCredentials: true,
-      }
-    );
+    const redirect_uri = location?.state?.from || '/';
+    navigate(redirect_uri);
+  };
 
-    dispatch(userLogin(email)); // get the user all info for profile page
-    console.log(response?.data?.message);
-    console.log(user, 'this is the user');
-  } catch (error) {
-    console.log(error.message);
-    setAuthError(error.message);
-  }
-};
-const logoutFromDB =  () => {
-  dispatch(setUser({}));
-  setAuthError('');
-  dispatch(userLogout());
-};
-// --------------------------------------------------------------//
+  const loginToDB = (email, password) => {
+    try {
+      const response =
+        ({
+          email,
+          password,
+        },
+        {
+          withCredentials: true,
+        });
 
+      dispatch(userLogin(email)); // get the user all info for profile page
+      console.log(response?.data?.message);
+      console.log(user, 'this is the user');
+    } catch (error) {
+      console.log(error.message);
+      setAuthError(error.message);
+    }
+  };
+
+  const logoutFromDB = () => {
+    dispatch(setUser({}));
+    setAuthError('');
+    dispatch(userLogout());
+  };
+  // --------------------------------------------------------------//
 
   return {
-    user, setUser,
+    user,
+    setUser,
     signInWithGoogle,
     registerUser,
     loginUser,
@@ -191,9 +188,8 @@ const logoutFromDB =  () => {
     authError,
     logOut,
     registerToDB,
-    loginToDB
-
-  }
+    loginToDB,
+  };
 };
 
 export default useFirebase;

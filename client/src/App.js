@@ -1,10 +1,10 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route} from 'react-router-dom';
-import Registration from './pages/registration/Registration';
-import Login from './pages/login/Login';
-import Message from './pages/message/Message';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import AuthProvider from './components/Context/AuthProvider';
+import Login from './pages/login/Login';
 import PrivateRoute from './pages/login/PrivateRoute';
+import Message from './pages/message/Message';
+import Registration from './pages/registration/Registration';
 function App() {
   // const [isLoading, setIsLoading] = useState(true)
   // const { user} = useAuth();
@@ -22,20 +22,20 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-      <Routes>
-        <Route exact path="/" element={
-        <PrivateRoute>
-          <Message />
-        </PrivateRoute>}>
-        </Route>
-        <Route path="/" element={<Message />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/registration" element={<Registration />} />
-      </Routes>
-    </BrowserRouter>
+        <Routes>
+          <Route
+            path="/chats"
+            element={
+              <PrivateRoute>
+                <Message />
+              </PrivateRoute>
+            }
+          ></Route>
+          <Route path="/login" element={<Login />} />
+          <Route path="/registration" element={<Registration />} />
+        </Routes>
+      </BrowserRouter>
     </AuthProvider>
-    
-    
   );
 }
 
