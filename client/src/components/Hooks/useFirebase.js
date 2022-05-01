@@ -1,3 +1,4 @@
+import axios from 'axios';
 import {
   createUserWithEmailAndPassword,
   getAuth,
@@ -8,7 +9,7 @@ import {
   signOut,
 } from 'firebase/auth';
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import initializeAuthentication from '../../pages/Firebase/firebase.init';
 import {
   userLogin,
@@ -19,12 +20,12 @@ import {
 initializeAuthentication();
 
 const useFirebase = () => {
-  const { myInfo } = useSelector((state) => state.auth);
   const [user, setUser] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const [authError, setAuthError] = useState('');
+
   const auth = getAuth();
   const dispatch = useDispatch();
-  const [authError, setAuthError] = useState('');
 
   // login google------------------------
   const signInWithGoogle = (location, navigate) => {
@@ -44,7 +45,7 @@ const useFirebase = () => {
         registerToDB(newUser, location, navigate);
         // saveUsers(user.email, user.displayName, 'PUT')
 
-        // setUser(user)
+        setUser(user);
         const destination = location?.state?.from || '/';
         navigate(destination);
 
@@ -60,17 +61,10 @@ const useFirebase = () => {
     setIsLoading(true);
     createUserWithEmailAndPassword(auth, email, password)
       .then((user) => {
-        console.log('this is user', user);
-
-        // save to database-------------
-        // ...
-        setAuthError('');
-        // setUser(newUser)
         const newUser = {
           userName,
           email,
           password,
-          // image: 'file',
           emailVerified: user?.emailVerified,
         };
 
@@ -80,10 +74,7 @@ const useFirebase = () => {
         setAuthError('');
       })
       .catch((error) => {
-        // const errorCode = error.code;
-        // const errorMessage = error.message;
         setAuthError(error.message);
-        // ..
       })
       .finally(() => {
         setIsLoading(false);
@@ -94,9 +85,9 @@ const useFirebase = () => {
     setIsLoading(true);
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
-        const destination = location?.state?.from || '/';
-        navigate(destination);
         setAuthError('');
+        navigate('/');
+        console.log('hitted');
       })
       .catch((error) => {
         // const errorCode = error.code;
@@ -125,15 +116,24 @@ const useFirebase = () => {
 
   // on auth state change -----------------------------
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const newUser = {
-          name: user?.displayName,
-          email: user?.email,
-          emailVerified: user?.emailVerified,
-        };
-
-        setUser(newUser);
+        await axios
+          .get(
+            'http://localhost:5000/api/auth/user-info?email=user51@gmail.com'
+          )
+          .then((response) => {
+            const currentUser =
+              Array.isArray(response.data) && response.data[0];
+            if (user?.email) {
+              setUser({
+                name: currentUser.userName,
+                email: currentUser.email,
+                emailVerified: user?.emailVerified,
+                image: currentUser.image,
+              });
+            }
+          });
       } else {
         setUser({});
       }
@@ -171,8 +171,8 @@ const useFirebase = () => {
   };
 
   const logoutFromDB = () => {
-    dispatch(setUser({}));
     setAuthError('');
+    setUser({});
     dispatch(userLogout());
   };
   // --------------------------------------------------------------//

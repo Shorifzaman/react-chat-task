@@ -9,7 +9,10 @@ import {
 export const userRegister = (data) => {
   return async (dispatch) => {
     try {
-      const response = await axios.post('/api/auth/user-register', data);
+      const response = await axios.post(
+        'http://localhost:5000/api/auth/user-register',
+        data
+      );
 
       localStorage.setItem('authToken', response.data.token);
 
@@ -64,9 +67,11 @@ export const userLogin = (data) => {
   };
 };
 
-export const userLogout = async (dispatch) => {
+export const userLogout = () => async (dispatch) => {
   try {
-    const response = await axios.post('/api/messenger/user-logout');
+    const response = await axios.post(
+      'http://localhost:5000/api/auth/user-logout'
+    );
 
     if (response.data.success) {
       localStorage.removeItem('authToken');

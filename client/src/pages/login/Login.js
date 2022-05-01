@@ -18,11 +18,12 @@ function Login() {
     setLoginData(newLoginData);
   };
 
-  const handleLoginSubmit = async (e) => {
+  const handleLoginSubmit = (e) => {
     e.preventDefault();
-    await loginUser(loginData.email, loginData.password, location, navigate);
+    loginUser(loginData.email, loginData.password, location, navigate);
     e.target.reset();
   };
+
   const handleGoogleSignIn = () => {
     signInWithGoogle(location, navigate);
   };
@@ -56,6 +57,7 @@ function Login() {
       <div className="_social_login_wrap">
         <div className="container">
           <div className="row align-items-center">
+            {/* side image */}
             <div className="col-xl-8 col-lg-8 col-md-12 col-sm-12">
               <div className="_social_login_left">
                 <div className="_social_login_left_image">
@@ -67,6 +69,7 @@ function Login() {
                 </div>
               </div>
             </div>
+
             <div className="col-xl-4 col-lg-4 col-md-12 col-sm-12">
               {isLoading ? (
                 <Spinner />
@@ -75,9 +78,11 @@ function Login() {
                   <p className="_social_login_content_para _mar_b8">
                     Welcome back
                   </p>
+
                   <h4 className="_social_login_content_title _titl4 _mar_b50">
                     Login to your account
                   </h4>
+
                   <button
                     type="button"
                     onClick={handleGoogleSignIn}
@@ -90,13 +95,12 @@ function Login() {
                     />{' '}
                     <span>Or sign-in with google</span>
                   </button>
-                  {/* <button type="button" onClick={() => signInWithGoogle(location, navigate)} className="_social_login_content_btn _mar_b40">
-                        <img src="assets/images/google.svg" alt="Image" className="_google_img" /> <span>Or sign-in with google</span>
-                        </button> */}
+
                   <div className="_social_login_content_bottom_txt _mar_b40">
                     {' '}
                     <span>Or</span>
                   </div>
+
                   <form
                     className="_social_login_form"
                     onSubmit={handleLoginSubmit}
@@ -175,12 +179,12 @@ function Login() {
                     </div>
                   </form>
                   {authError && (
-                    <p severity="error">
+                    <div severity="error">
                       <hr />
                       <p>Error</p>
                       {authError} <strong>check it out!</strong>
                       <hr />
-                    </p>
+                    </div>
                   )}
 
                   <div className="row">

@@ -5,6 +5,7 @@ import Login from './pages/login/Login';
 import PrivateRoute from './pages/login/PrivateRoute';
 import Message from './pages/message/Message';
 import Registration from './pages/registration/Registration';
+
 function App() {
   // const [isLoading, setIsLoading] = useState(true)
   // const { user} = useAuth();
@@ -24,7 +25,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route
-            path="/chats"
+            path="/"
             element={
               <PrivateRoute>
                 <Message />

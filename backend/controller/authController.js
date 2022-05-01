@@ -1,6 +1,6 @@
 const formidable = require('formidable');
 const validator = require('validator');
-const registerModel = require('../models/authModel');
+const User = require('../models/authModel');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -40,7 +40,7 @@ module.exports.userRegister = async (req, res) => {
     });
   } else {
     try {
-      const checkUser = await registerModel.findOne({
+      const checkUser = await User.findOne({
         email: email,
       });
 
@@ -51,7 +51,7 @@ module.exports.userRegister = async (req, res) => {
           },
         });
       } else {
-        const userCreate = await registerModel.create({
+        const userCreate = await User.create({
           userName,
           email,
           password: await bcrypt.hash(password, 10),
@@ -112,11 +112,9 @@ module.exports.userLogin = async (req, res) => {
     });
   } else {
     try {
-      const checkUser = await registerModel
-        .findOne({
-          email: email,
-        })
-        .select('+password');
+      const checkUser = await User.findOne({
+        email: email,
+      }).select('+password');
 
       if (checkUser) {
         const matchPassword = await bcrypt.compare(
@@ -177,4 +175,16 @@ module.exports.userLogout = (req, res) => {
   res.status(200).cookie('authToken', '').json({
     success: true,
   });
+};
+
+module.exports.getSingleUserInfo = async (req, res) => {
+  try {
+    const { email } = req.query;
+    const user = await User.find({ email });
+    res.json(user);
+  } catch (error) {
+    res.json({
+      message: error.message,
+    });
+  }
 };
